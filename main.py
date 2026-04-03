@@ -34,6 +34,12 @@ def main():
         for u in updatable:
             u.update(dt)
         for a in asteroids:
+            for s in shots:
+                if s.collides_with(a):
+                    log_event("asteroid_shot")
+                    a.split()
+                    s.kill()
+        for a in asteroids:
             if player.collides_with(a):
                 log_event("player_hit")
                 print("Game over!")
@@ -42,7 +48,6 @@ def main():
         for d in drawable:
             d.draw(screen)
         pygame.display.flip()
-        clock.tick(60)
         dt = clock.tick(60) / 1000
 
 if __name__ == "__main__":
