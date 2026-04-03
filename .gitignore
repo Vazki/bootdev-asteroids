@@ -12,3 +12,4 @@ wheels/
 # Data files
 game_state.jsonl
 game_events.jsonl
+TODO.txt
