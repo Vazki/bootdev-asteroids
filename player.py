@@ -25,6 +25,9 @@ class Player(CircleShape):
         self.rotation += PLAYER_TURN_SPEED * dt
 
     def update(self, dt):
+        self.velocity *= max(0, 1 - PLAYER_DRAG * dt)
+        self.position += self.velocity * dt
+
         keys = pygame.key.get_pressed()
         if keys[pygame.K_ESCAPE]:
              log_event("game_quit")
@@ -45,10 +48,8 @@ class Player(CircleShape):
             self.shot_cooldown_timer -= dt
 
     def move(self, dt):
-        unit_vector = pygame.Vector2(0, 1)
-        rotated_vector = unit_vector.rotate(self.rotation)
-        rotated_with_speed_vector = rotated_vector * PLAYER_SPEED * dt
-        self.position += rotated_with_speed_vector
+        forward = pygame.Vector2(0, 1).rotate(self.rotation)
+        self.velocity += forward * PLAYER_ACCELERATION * dt
 
     def shoot(self):
         if self.shot_cooldown_timer > 0:

@@ -15,5 +15,11 @@ SCORE_LARGE                   = 20                                    # Points a
 SCORE_MEDIUM                  = 50                                    # Points awarded for destroying a medium asteroid
 SCORE_SMALL                   = 100                                   # Points awarded for destroying a small asteroid
 PLAYER_LIVES                  = 3                                     # Starting number of lives for the player
-RESPAWN_INVINCIBLE_SECS       = 2.0                                   # Duration of invulnerability after respawning
+PLAYER_MAX_HITS               = 3                                     # Hits before losing a life
+PLAYER_ACCELERATION           = 500                                   # Thrust acceleration in pixels/sec²
+PLAYER_DRAG                   = 1.5                                   # Drag coefficient; higher = stops faster
+PLAYER_KNOCKBACK_SPEED        = 300                                   # Speed applied to player on asteroid hit
+RESPAWN_INVINCIBLE_SECS       = 2.0                                   # Duration of invulnerability after losing a life
+HIT_INVINCIBLE_SECS           = 1.0                                   # Duration of invulnerability after a regular hit
 INVINCIBILITY_FLICKER_RATE    = 10                                    # Toggles per second (10 = 0.1s on, 0.1s off)
+ASTEROID_MAX_COUNT            = 15                                    # Max asteroids AsteroidField will spawn; splits are unaffected

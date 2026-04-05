@@ -12,3 +12,8 @@ class Shot(CircleShape):
     
     def draw(self, screen):
         pygame.draw.circle(screen, "white", self.position, self.radius)
+
+    def wrap_position(self, screen_width, screen_height):
+        if (self.position.x < -self.radius or self.position.x > screen_width + self.radius or
+                self.position.y < -self.radius or self.position.y > screen_height + self.radius):
+            self.kill()
