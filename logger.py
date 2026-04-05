@@ -3,32 +3,40 @@ import json
 import math
 from datetime import datetime
 
+# --- Module Export Configuration ---
 __all__ = ["log_state", "log_event"]
 
-_FPS = 60
-_MAX_SECONDS = 16
-_SPRITE_SAMPLE_LIMIT = 10  # Maximum number of sprites to log per group
+# --- Logging Constants ---
+_FPS                 = 60
+_MAX_SECONDS         = 16
+_SPRITE_SAMPLE_LIMIT = 10  # Maximum sprites to record per group to prevent massive log files
 
-_frame_count = 0
-_state_log_initialized = False
-_event_log_initialized = False
-_start_time = datetime.now()
-
+# --- Internal State Tracking ---
+_frame_count           = 0
+_state_log_initialized  = False
+_event_log_initialized  = False
+_start_time             = datetime.now()
 
 def log_state():
+    """
+    Captures a snapshot of the game state from the caller's local variables.
+    Executed approximately once per second for the first 16 seconds of runtime.
+    """
     global _frame_count, _state_log_initialized
 
-    # Stop logging after `_MAX_SECONDS` seconds
+    # 1. Frequency and Duration Control
     if _frame_count > _FPS * _MAX_SECONDS:
         return
 
-    # Take a snapshot approx. once per second
     _frame_count += 1
     if _frame_count % _FPS != 0:
         return
 
     now = datetime.now()
 
+    # 2. Reflection: Accessing the Caller's Scope
+    # inspect.currentframe().f_back allows this function to see variables 
+    # inside the function that called log_state() (e.g., main()).
     frame = inspect.currentframe()
     if frame is None:
         return
@@ -39,13 +47,16 @@ def log_state():
 
     local_vars = frame_back.f_locals.copy()
 
+    # 3. Data Extraction Logic
     screen_size = []
-    game_state = {}
+    game_state  = {}
 
     for key, value in local_vars.items():
+        # Identify the Pygame Display/Screen size
         if "pygame" in str(type(value)) and hasattr(value, "get_size"):
             screen_size = value.get_size()
 
+        # Identify Sprite Groups and extract member data
         if hasattr(value, "__class__") and "Group" in value.__class__.__name__:
             sprites_data = []
 
@@ -53,6 +64,7 @@ def log_state():
                 if i >= _SPRITE_SAMPLE_LIMIT:
                     break
 
+                # Build a dictionary of common physical attributes
                 sprite_info = {"type": sprite.__class__.__name__}
 
                 if hasattr(sprite, "position"):
@@ -77,9 +89,9 @@ def log_state():
 
             game_state[key] = {"count": len(value), "sprites": sprites_data}
 
+        # Identify individual game objects (like the Player) not in a group
         if len(game_state) == 0 and hasattr(value, "position"):
             sprite_info = {"type": value.__class__.__name__}
-
             sprite_info["pos"] = [
                 round(value.position.x, 2),
                 round(value.position.y, 2),
@@ -99,23 +111,27 @@ def log_state():
 
             game_state[key] = sprite_info
 
+    # 4. JSON Entry Construction
     entry = {
-        "timestamp": now.strftime("%H:%M:%S.%f")[:-3],
-        "elapsed_s": math.floor((now - _start_time).total_seconds()),
-        "frame": _frame_count,
+        "timestamp":   now.strftime("%H:%M:%S.%f")[:-3],
+        "elapsed_s":   math.floor((now - _start_time).total_seconds()),
+        "frame":       _frame_count,
         "screen_size": screen_size,
         **game_state,
     }
 
-    # New log file on each run
+    # 5. File I/O (JSON Lines format)
+    # Overwrites on the first call of a session, appends thereafter
     mode = "w" if not _state_log_initialized else "a"
     with open("game_state.jsonl", mode) as f:
         f.write(json.dumps(entry) + "\n")
 
     _state_log_initialized = True
 
-
 def log_event(event_type, **details):
+    """
+    Logs specific discrete occurrences (e.g., collisions, shots) to a separate file.
+    """
     global _event_log_initialized
 
     now = datetime.now()
@@ -123,8 +139,8 @@ def log_event(event_type, **details):
     event = {
         "timestamp": now.strftime("%H:%M:%S.%f")[:-3],
         "elapsed_s": math.floor((now - _start_time).total_seconds()),
-        "frame": _frame_count,
-        "type": event_type,
+        "frame":     _frame_count,
+        "type":      event_type,
         **details,
     }
 
