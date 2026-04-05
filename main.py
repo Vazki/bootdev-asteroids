@@ -15,6 +15,8 @@ def main():
 
     dt = 0
     score = 0
+    lives = PLAYER_LIVES
+    invincible_timer = 0.0
 
     updatable = pygame.sprite.Group()
     drawable = pygame.sprite.Group()
@@ -33,6 +35,8 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
+        if invincible_timer > 0:
+            invincible_timer -= dt
         for u in updatable:
             u.update(dt)
         for a in asteroids:
@@ -48,16 +52,27 @@ def main():
                     a.split()
                     s.kill()
         for a in asteroids:
-            if player.collides_with(a):
-                log_event("player_hit")
-                print("Game over!")
-                print(f"Final score: {score}")
-                sys.exit()
+            for a in asteroids:
+                if invincible_timer <= 0 and player.collides_with(a):
+                    log_event("player_hit")
+                    lives -= 1
+                    if lives <= 0:
+                        print("Game over!")
+                        sys.exit()
+                    # respawn
+                    player.position = pygame.Vector2(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+                    player.velocity = pygame.Vector2(0, 0)
+                    player.rotation = 0
+                    invincible_timer = RESPAWN_INVINCIBLE_SECS
         screen.fill("black")
         for d in drawable:
+            if d is player and invincible_timer > 0 and int(invincible_timer * INVINCIBILITY_FLICKER_RATE) % 2 == 0:
+                continue
             d.draw(screen)
         score_surface = font.render(f"Score: {score}", True, "white")
         screen.blit(score_surface, (10, 10))
+        lives_surface = font.render(f"Lives: {lives}", True, "white")
+        screen.blit(lives_surface, (10, 40))
         pygame.display.flip()
         dt = clock.tick(60) / 1000
 
