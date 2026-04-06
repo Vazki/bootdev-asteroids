@@ -15,7 +15,10 @@ SCORE_LARGE                   = 20                                    # Points a
 SCORE_MEDIUM                  = 50                                    # Points awarded for destroying a medium asteroid
 SCORE_SMALL                   = 100                                   # Points awarded for destroying a small asteroid
 PLAYER_LIVES                  = 3                                     # Starting number of lives for the player
-PLAYER_MAX_HITS               = 3                                     # Hits before losing a life
+PLAYER_MAX_HITS               = 10                                    # Health points before losing a life
+DAMAGE_SMALL                  = 2                                     # Damage dealt by a small asteroid
+DAMAGE_MEDIUM                 = 4                                     # Damage dealt by a medium asteroid
+DAMAGE_LARGE                  = 6                                     # Damage dealt by a large asteroid
 PLAYER_ACCELERATION           = 500                                   # Thrust acceleration in pixels/sec²
 PLAYER_DRAG                   = 1.5                                   # Drag coefficient; higher = stops faster
 PLAYER_KNOCKBACK_SPEED        = 300                                   # Speed applied to player on asteroid hit

@@ -94,6 +94,16 @@ class Player(CircleShape):
         if keys[pygame.K_SPACE]:
             self.shoot()
 
+    def respawn(self, x, y):
+        self.position = pygame.Vector2(x, y)
+        self.velocity = pygame.Vector2(0, 0)
+        self.rotation = 0
+
+    def apply_knockback(self, source_position):
+        away = self.position - source_position
+        if away.length() > 0:
+            self.velocity = away.normalize() * PLAYER_KNOCKBACK_SPEED
+
     def shoot(self):
         """
         Creates a new Shot entity if the cooldown timer has expired.

@@ -23,6 +23,21 @@ class Asteroid(CircleShape):
 
     # --- Life-cycle & Splitting Logic ---
 
+    def _tier_value(self, small, medium, large):
+        if self.radius >= ASTEROID_MAX_RADIUS:
+            return large
+        elif self.radius >= ASTEROID_MIN_RADIUS * 2:
+            return medium
+        return small
+
+    @property
+    def damage_value(self):
+        return self._tier_value(DAMAGE_SMALL, DAMAGE_MEDIUM, DAMAGE_LARGE)
+
+    @property
+    def score_value(self):
+        return self._tier_value(SCORE_SMALL, SCORE_MEDIUM, SCORE_LARGE)
+
     def split(self):
         """
         Handles the destruction of the asteroid. If the asteroid is large enough, 
@@ -48,7 +63,6 @@ class Asteroid(CircleShape):
         # The new fragments will be one tier smaller than the parent
         new_radius   = self.radius - ASTEROID_MIN_RADIUS
 
-        # 2. Instantiate new fragments
-        # The fragments move slightly faster (1.2x) than the parent asteroid
-        Asteroid(self.position.x, self.position.y, new_radius).velocity = new_vector_1 * 1.2
-        Asteroid(self.position.x, self.position.y, new_radius).velocity = new_vector_2 * 1.2
+        # 2. Instantiate new fragments (1.2x speed of parent)
+        for vec in (new_vector_1, new_vector_2):
+            Asteroid(self.position.x, self.position.y, new_radius).velocity = vec * 1.2
