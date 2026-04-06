@@ -1,5 +1,4 @@
 import sys
-import os
 import pygame
 from constants import *
 from logger import log_state, log_event
@@ -7,20 +6,14 @@ from player import Player
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from shot import Shot
-
-def _ship_icon_points(cx, cy, radius=8, rotation=180):
-    forward = pygame.Vector2(0, 1).rotate(rotation)
-    right   = pygame.Vector2(0, 1).rotate(rotation + 90) * radius / 1.5
-    pos     = pygame.Vector2(cx, cy)
-    return [pos + forward * radius, pos - forward * radius - right, pos - forward * radius + right]
+from ui import init_ui, draw_sprites, draw_hud
 
 def main():
     # --- Initialization ---
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    clock      = pygame.time.Clock()
-    _font_path = os.path.join(os.path.dirname(__file__), "assets", "fonts", "PressStart2P-Regular.ttf")
-    score_font = pygame.font.Font(_font_path, 28)
+    clock  = pygame.time.Clock()
+    init_ui()
 
     # --- Game State Variables ---
     dt               = 0
@@ -102,47 +95,8 @@ def main():
                     invincible_timer = HIT_INVINCIBLE_SECS
 
         # 5. Drawing and Rendering
-        screen.fill("black")
-
-        # Render all drawable sprites
-        for d in drawable:
-            # Implement flicker effect by skipping draw calls based on timer frequency
-            if d is player and invincible_timer > 0:
-                if int(invincible_timer * INVINCIBILITY_FLICKER_RATE) % 2 == 0:
-                    continue
-            d.draw(screen)
-
-        ui_top = 14
-
-        # Score — top-left
-        score_surf = score_font.render(str(score), True, "white")
-        screen.blit(score_surf, (16, ui_top))
-
-        # Health pips — 10 segments, top-center
-        pip_count   = 10
-        pip_gap     = 4
-        pip_h       = 12
-        pip_w       = 36
-        pips_total  = pip_count * pip_w + (pip_count - 1) * pip_gap
-        pip_x0      = (SCREEN_WIDTH - pips_total) // 2
-        pip_y       = ui_top
-        health_frac = max(0.0, 1.0 - player_hits / PLAYER_MAX_HITS)
-        lit         = round(pip_count * health_frac)
-        for i in range(pip_count):
-            px   = pip_x0 + i * (pip_w + pip_gap)
-            rect = (px, pip_y, pip_w, pip_h)
-            if i < lit:
-                pygame.draw.rect(screen, "white", rect)
-            else:
-                pygame.draw.rect(screen, "white", rect, LINE_WIDTH)
-
-        # Lives — ship icons, top-right
-        for i in range(PLAYER_LIVES):
-            cx    = SCREEN_WIDTH - PLAYER_RADIUS - 12 - i * (PLAYER_RADIUS * 2 + 15)
-            color = (80, 80, 80) if i >= lives else "white"
-            pygame.draw.polygon(screen, color,
-                                _ship_icon_points(cx, PLAYER_RADIUS + 12, PLAYER_RADIUS),
-                                LINE_WIDTH)
+        draw_sprites(screen, drawable, player, invincible_timer)
+        draw_hud(screen, score, lives, player_hits)
 
         pygame.display.flip()
 
